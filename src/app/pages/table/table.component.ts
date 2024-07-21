@@ -92,7 +92,6 @@ export class TableComponent {
     tap(() => this.isLoading.set(false)),
     map((response) => response.items),
     catchError((err: HttpErrorResponse) => {
-      console.log(err);
       this.error.set(err.error.message);
       this.isLoading.set(false);
       return of([]);
