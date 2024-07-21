@@ -1,0 +1,33 @@
+export interface GithubIssue {
+  url: string;
+  repository_url: string;
+  labels_url: string;
+  comments_url: string;
+  events_url: string;
+  html_url: string;
+  id: number;
+  node_id: string;
+  number: number;
+  title: string;
+  user: unknown;
+  labels: unknown[];
+  state: unknown;
+  locked: boolean;
+  assignee: null;
+  assignees: unknown[];
+  milestone: null;
+  comments: number;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+  author_association: unknown;
+  active_lock_reason: null;
+  draft?: boolean;
+  pull_request?: unknown;
+  body: null | string;
+  reactions: unknown;
+  timeline_url: string;
+  performed_via_github_app: null;
+  state_reason: null | string;
+  score: number;
+}

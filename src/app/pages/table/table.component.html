@@ -1,0 +1,58 @@
+<a mat-flat-button color="primary" routerLink="/">Back</a>
+<div class="table-wrapper">
+  @if (data$ | async; as data) {
+    @if (!isLoading()) {
+      @if (error()) {
+        <h4 class="error-message">{{ error() }}</h4>
+      }
+      <table
+        mat-table
+        [dataSource]="data"
+        matSort
+        (matSortChange)="onSortChanged($event)"
+        [matSortActive]="sort()"
+        matSortDisableClear
+        [matSortDirection]="sortOrder()"
+      >
+        <ng-container matColumnDef="created_at">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header disableClear>
+            Created On
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.created_at | date: "MM-dd-yy hh:mm:ss a" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="updated_at">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header disableClear>
+            Updated On
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.updated_at | date: "MM-dd-yy hh:mm:ss a" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Title</th>
+          <td mat-cell *matCellDef="let element">{{ element.title }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      <mat-paginator
+        [pageSizeOptions]="[30, 60, 100]"
+        [pageSize]="pageSize()"
+        [pageIndex]="page() - 1"
+        [length]="totalCount()"
+        showFirstLastButtons
+        (page)="onPageChanged($event)"
+      >
+      </mat-paginator>
+    } @else {
+      <mat-spinner class="center-block"></mat-spinner>
+    }
+  } @else {
+    <mat-spinner class="center-block"></mat-spinner>
+  }
+</div>
