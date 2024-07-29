@@ -1,11 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
 import { MatAnchor } from '@angular/material/button';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { OverlayModule } from '@angular/cdk/overlay';
@@ -24,7 +25,7 @@ import { GithubIssue } from '../../core/models/github-issue';
 import { MatSortModule, Sort, SortDirection } from '@angular/material/sort';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { GitHubOrderKey } from '../../core/models/github-order-key';
 
@@ -48,16 +49,49 @@ import { GitHubOrderKey } from '../../core/models/github-order-key';
 })
 export class TableComponent {
   githubApiService = inject(GithubApiService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
   displayedColumns: (keyof GithubIssue)[] = [
     'created_at',
     'updated_at',
     'title',
   ];
-  pageSize = signal<number>(100);
-  page = signal<number>(1);
+
+  _pageSize = toSignal(
+    this.route.queryParamMap.pipe(
+      map((queryParamMap) => {
+        const pageSize = queryParamMap.get('pageSize');
+        return pageSize ? +pageSize : 100;
+      }),
+    ),
+  );
+  pageSize = computed<number>(() => this._pageSize() ?? 100);
+
+  _page = toSignal<number>(
+    this.route.queryParamMap.pipe(
+      map((queryParamMap) => {
+        const page = queryParamMap.get('page');
+        return page ? +page : 1;
+      }),
+    ),
+  );
+  page = computed(() => this._page() ?? 1);
+
+  _sort = toSignal(
+    this.route.queryParamMap.pipe(
+      map((queryParamMap) => queryParamMap.get('sort')),
+    ),
+  );
+  sort = computed(() => this._sort() ?? 'created_at');
+
+  _sortOrder = toSignal<SortDirection>(
+    this.route.queryParamMap.pipe(
+      map((queryParamMap) => queryParamMap.get('sortOrder') as SortDirection),
+    ),
+  );
+  sortOrder = computed(() => this._sortOrder() ?? 'desc');
+
   totalCount = signal<number>(0);
-  sort = signal<keyof GithubIssue>('created_at');
-  sortOrder = signal<SortDirection>('desc');
   isLoading = signal<boolean>(false);
   error = signal<string | null>(null);
 
@@ -99,12 +133,20 @@ export class TableComponent {
   );
 
   onPageChanged($event: PageEvent) {
-    this.page.set($event.pageIndex + 1);
-    this.pageSize.set($event.pageSize);
+    const page = $event.pageIndex + 1;
+    const pageSize = $event.pageSize;
+    this.router.navigate([], {
+      queryParams: { page, pageSize },
+      queryParamsHandling: 'merge',
+    });
   }
 
   onSortChanged($event: Sort) {
-    this.sort.set($event.active as keyof GithubIssue);
-    this.sortOrder.set($event.direction);
+    const sort = $event.active;
+    const sortOrder = $event.direction;
+    this.router.navigate([], {
+      queryParams: { sort, sortOrder },
+      queryParamsHandling: 'merge',
+    });
   }
 }
